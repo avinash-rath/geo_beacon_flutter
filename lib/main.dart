@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Beacon',
       
       home: HomePage(
-        channel: IOWebSocketChannel.connect('ws://echo.websocket.org'),
+        channel: IOWebSocketChannel.connect('ws://192.168.0.104:1337'),
       ),
     );
   }
