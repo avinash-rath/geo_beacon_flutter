@@ -1,16 +1,14 @@
 # geo_beacon_flutter
 
-A new Flutter project.
 
-## Getting Started
+## Qualifier Task
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+Language: Flutter
+Must work in: Android, iOS (OK if you can just test in one, but we will test in both and if it doesn't work we'll send you the debug info so you can fix it).
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+Write a Flutter app that is able to share your location with anyone who has a specific passkey. For example, suppose you are going to start a hike with friends and you want them to know your location but only for the next 3 hours. You can do that in many ways, but let's say one is by letting people look up a passkey somewhere (to simplify things consider that it's OK to look up a list of passkeys in a static file hosted in github, so you don't need to setup a database).
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Your app then will have two modes of operation: Someone is sharing their location (that means “carrying the beacon”) and everybody else can see that location (they are “following the beacon”).
+
+## [TODO: finish readme]
