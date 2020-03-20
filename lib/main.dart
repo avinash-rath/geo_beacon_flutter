@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geo_beacon_flutter/broadcastListener.dart';
+import 'package:geo_beacon_flutter/config.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Beacon',
       home: HomePage(
-        channel: IOWebSocketChannel.connect('ws://192.168.0.104:1337'),
+        channel: IOWebSocketChannel.connect('$websocketServerUrl:$locationSendPort'),
       ),
     );
   }
@@ -57,7 +58,10 @@ class _HomePageState extends State<HomePage> {
               },
             ),
             SizedBox(height: 50.0),
-            BroadcastListener(channel: IOWebSocketChannel.connect('ws://192.168.0.104:1338'),),
+            BroadcastListener(
+              channel: IOWebSocketChannel.connect(
+                  '$websocketServerUrl:$broadcastListenerPort'),
+            ),
           ],
         ),
       ),
