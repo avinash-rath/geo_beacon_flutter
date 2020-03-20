@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geo_beacon_flutter/broadcastListener.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -10,7 +11,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Beacon',
-      
       home: HomePage(
         channel: IOWebSocketChannel.connect('ws://192.168.0.104:1337'),
       ),
@@ -28,7 +28,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   TextEditingController _controller = new TextEditingController();
 
   @override
@@ -56,7 +55,9 @@ class _HomePageState extends State<HomePage> {
                   child: Text(snapshot.hasData ? '${snapshot.data}' : ''),
                 );
               },
-            )
+            ),
+            SizedBox(height: 50.0),
+            BroadcastListener(channel: IOWebSocketChannel.connect('ws://192.168.0.104:1338'),),
           ],
         ),
       ),
@@ -67,6 +68,7 @@ class _HomePageState extends State<HomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
       widget.channel.sink.add(_controller.text);
@@ -77,5 +79,5 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     widget.channel.sink.close();
     super.dispose();
-  } 
+  }
 }
