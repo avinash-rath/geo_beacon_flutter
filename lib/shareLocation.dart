@@ -17,6 +17,8 @@ class ShareLocation extends StatefulWidget {
 }
 
 class _ShareLocationState extends State<ShareLocation> {
+  // Using onLocationChanged() method of `location` package
+  // to get a stream of LocationData when the location changes. 
   Stream<LocationData> locationStream;
 
   // Boolean to display widgets in UI.
@@ -66,6 +68,8 @@ class _ShareLocationState extends State<ShareLocation> {
     return _locationData;
   }
 
+
+  // Method for MaterialButton
   Widget getButton({
     @required String message,
     @required VoidCallback function,
@@ -90,10 +94,15 @@ class _ShareLocationState extends State<ShareLocation> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
+        // If the location is not being streamed,
+        // before starting to stream choose a passkey,
         !hasAccessToLoc
             ? getButton(
                 message: locationDataMap['passkey'] == ''
+                // if passkey is not chosen, choose one.
                     ? 'Choose Passkey'
+                // Once Passkey is chosen, the app is ready to stream
+                // the location.
                     : 'Start sharing - ${locationDataMap['passkey']}',
                 function: locationDataMap['passkey'] == ''
                     ? () {
@@ -107,6 +116,10 @@ class _ShareLocationState extends State<ShareLocation> {
                             });
                       }
                     : () {
+                      // Location streaming has started and we are listening
+                      // to the first tick of location stream that we get from
+                      // getLocation() method. Once received the same is sent
+                      // via websocket to the server.
                         getLocation().then((_locationData) {
                           setState(() {
                             hasAccessToLoc = true;
@@ -118,6 +131,8 @@ class _ShareLocationState extends State<ShareLocation> {
                         });
                       })
             : Container(),
+        // Once location has started streaming, an option to
+        // stop streaming is made available.
         hasAccessToLoc
             ? getButton(
             message: 'Stop Sharing Location',
@@ -136,6 +151,8 @@ class _ShareLocationState extends State<ShareLocation> {
             },
               )
             : Container(),
+        // Before beginning the stream, check for all the available
+        // passkeys and choose one to start sharing location.
         !hasAccessToLoc
             ? Expanded(
                 child: StreamBuilder(
@@ -185,6 +202,9 @@ class _ShareLocationState extends State<ShareLocation> {
                 ),
               )
             : Container(),
+        // After the initial tick from getLocation() listen to
+        // the locationStream and keep sending the same to server
+        // Also keeping track of the current location in the UI.
         hasAccessToLoc
             ? StreamBuilder(
                 stream: locationStream,
@@ -217,6 +237,8 @@ class _ShareLocationState extends State<ShareLocation> {
 
   @override
   void dispose() {
+    // Before disposing the Widget, set the 'using' parameter
+    // to false and notify the same to the server.
     locationDataMap['using'] = false;
     widget.channel.sink.add(json.encode(locationDataMap));
     widget.channel.sink.close();

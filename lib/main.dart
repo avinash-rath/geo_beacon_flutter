@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Landing Screen
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -51,6 +52,7 @@ class _HomePageState extends State<HomePage> {
             height: 25.0,
           ),
           Expanded(
+            // Websocket to share live location.
             child: ShareLocation(
               channel: IOWebSocketChannel.connect(
                 '$websocketServerUrl:$locationSendPort',
@@ -81,6 +83,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 color: Theme.of(context).primaryColor,
               ),
+              // Websocket to listen to a list of Active Broadcasts
               child: ActiveLocListener(
                 channel: IOWebSocketChannel.connect(
                     '$websocketServerUrl:$activeLocListenerPort'),

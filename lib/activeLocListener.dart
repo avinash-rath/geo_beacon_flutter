@@ -6,6 +6,7 @@ import 'package:geo_beacon_flutter/styles.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+// Listens for the list of passkeys with active location sharing.
 class ActiveLocListener extends StatefulWidget {
   final WebSocketChannel channel;
   ActiveLocListener({@required this.channel});
@@ -54,7 +55,7 @@ class _ActiveLocListenerState extends State<ActiveLocListener> {
                           style: regularFontSize,),),
                         ),
                         onTap: () {
-                          setState(() {
+                          // Start listening to the broadcast for that passkey.
                             Navigator.of(context).push(CupertinoPageRoute(
                               builder: (context) => BroadcastListener(
                                 passkey: passkeys[index],
@@ -62,7 +63,6 @@ class _ActiveLocListenerState extends State<ActiveLocListener> {
                                     '$websocketServerUrl:$broadcastListenerPort'),
                               ),
                             ));
-                          });
                         },
                       );
                     }),
