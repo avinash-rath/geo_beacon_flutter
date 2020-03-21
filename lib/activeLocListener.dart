@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geo_beacon_flutter/broadcastListener.dart';
 import 'package:geo_beacon_flutter/config.dart';
+import 'package:geo_beacon_flutter/styles.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -25,30 +26,48 @@ class _ActiveLocListenerState extends State<ActiveLocListener> {
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
           List<String> passkeys = snapshot.data.split(",");
-          if (passkeys.length == 0)
-            return Text('No one is sharing location');
-          else {
-            return ListView.builder(
-                itemCount: passkeys.length,
-                itemBuilder: (context, index) {
-                  return InkWell(
-                    child: Container(
-                      height: 30.0,
-                      child: Text(passkeys[index]),
-                    ),
-                    onTap: () {
-                      setState(() {
-                        Navigator.of(context).push(CupertinoPageRoute(
-                          builder: (context) => BroadcastListener(
-                            passkey:passkeys[index],
-                            channel: IOWebSocketChannel.connect(
-                                '$websocketServerUrl:$broadcastListenerPort'),
+          if (snapshot.data.length == 0) {
+            return Center(
+              child: Text(
+                'No one is sharing location.',
+                style: regularFontSize,
+              ),
+            );
+          } else {
+            return Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Center(
+                child: ListView.builder(
+                  physics: BouncingScrollPhysics(),
+                    itemCount: passkeys.length,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(topLeft: Radius.circular(20.0),
+                            bottomRight: Radius.circular(20.0),
+                            topRight: Radius.circular(20.0)),
+                            color: Colors.white,
                           ),
-                        ));
-                      });
-                    },
-                  );
-                });
+                          height: 50.0,
+                          child: Center(child: Text('Active - ${passkeys[index]}',
+                          style: regularFontSize,),),
+                        ),
+                        onTap: () {
+                          setState(() {
+                            Navigator.of(context).push(CupertinoPageRoute(
+                              builder: (context) => BroadcastListener(
+                                passkey: passkeys[index],
+                                channel: IOWebSocketChannel.connect(
+                                    '$websocketServerUrl:$broadcastListenerPort'),
+                              ),
+                            ));
+                          });
+                        },
+                      );
+                    }),
+              ),
+            );
           }
         } else if (snapshot.hasError) {
           return Text('Error : ${snapshot.error}');

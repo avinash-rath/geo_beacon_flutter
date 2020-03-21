@@ -14,3 +14,8 @@ TextStyle regularFontSize = TextStyle(
 TextStyle largeFontSize = TextStyle(
   fontSize: 19.0
 );
+
+TextStyle headerStyle = TextStyle(
+  fontSize: 21.0,
+  fontWeight: FontWeight.bold
+);
