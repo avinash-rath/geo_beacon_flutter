@@ -8,14 +8,6 @@ var https = require('https');
 // path to file -> /passkeys.txt/
 var passkeysMapList = [];
 var passkeysList = [];
-var options = {
-  'hostname': 'api.github.com',
-  'path':'/repos/avinash-rath/geo_beacon_flutter/contents/passkeys.txt',
-  'method':'GET',
-  'headers':{'User-Agent':'avinash-rath'}
-
-}
-
 function mapPasskeys(item,count) {
   passkeysMapList.push({
     'passkey':item,
@@ -23,6 +15,16 @@ function mapPasskeys(item,count) {
     'lat':0.0,
     'lng':0.0
   });
+}
+//__________________________________________________
+
+// using GitHub API to read the static file stored in the repo
+var options = {
+  'hostname': 'api.github.com',
+  'path':'/repos/avinash-rath/geo_beacon_flutter/contents/passkeys.txt',
+  'method':'GET',
+  'headers':{'User-Agent':'avinash-rath'}
+
 }
 
 https.get(options,
@@ -44,6 +46,7 @@ https.get(options,
 });
 
 //__________________________________________________
+
 // Creating http server for the Websocket server.
 var server = http.createServer(function(request, response) {
 });
@@ -56,7 +59,6 @@ wsServer = new WebSocketServer({
   httpServer: server
 });
 
-var location='';
 
 // WebSocket server
 wsServer.on('request', function(request) {
@@ -98,6 +100,9 @@ wsServer.on('request', function(request) {
   });
 });
 //__________________________________________________
+
+// Create one server to constantly update which passkeys
+// are being used to share location.
 var activeLocServer = http.createServer(function(request, response) {
 });
 
@@ -126,8 +131,9 @@ activeLocWsServer.on('request', function(request) {
   })
 });
 //__________________________________________________
+
 // Create broadcast server to broadcast the geo 
-// location to all the connected users with passkeys
+// location to all the connected users for eaach passkey
 var broadcastServer = http.createServer(function(request, response) {
 });
 
@@ -149,7 +155,8 @@ broadcastWsServer.on('request', function(request) {
   // Handle messages
   connection.on('message', function(message) {
     if (message.type === 'utf8') {
-     // process WebSocket message
+     // get passkey from user and send relative 
+     // location data to the client.
      var passkey = message.utf8Data;
      var index = 0;
      for(var i = 0 ; i < passkeysMapList.length ; i++) {
@@ -158,6 +165,7 @@ broadcastWsServer.on('request', function(request) {
         break;
       }
      }
+     // sending updates on location every 1 sec.
      setInterval(()=>{
       connection.sendUTF(
         JSON.stringify({
