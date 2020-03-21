@@ -66,42 +66,21 @@ class _ShareLocationState extends State<ShareLocation> {
     return _locationData;
   }
 
-  getButton() {
+  Widget getButton({
+    @required String message,
+    @required VoidCallback function,
+  }) {
     return Center(
       child: MaterialButton(
+        padding: EdgeInsets.all(15.0),
         shape: StadiumBorder(),
         color: Theme.of(context).primaryColor,
         splashColor: Colors.white,
-        child: locationDataMap['passkey'] == ''
-            ? Text(
-                'Choose passkey',
-                style: regularFontSize,
-              )
-            : Text(
-                'Start sharing - ${locationDataMap['passkey']}',
-                style: regularFontSize,
-              ),
-        onPressed: locationDataMap['passkey'] == ''
-            ? () {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text("Hold On.."),
-                        content: Text('Choose a passkey first.'),
-                      );
-                    });
-              }
-            : () {
-                getLocation().then((_locationData) {
-                  setState(() {
-                    hasAccessToLoc = true;
-                    locationDataMap['lng'] = _locationData.longitude;
-                    locationDataMap['lat'] = _locationData.latitude;
-                    widget.channel.sink.add(json.encode(locationDataMap));
-                  });
-                });
-              },
+        child: Text(
+          '$message',
+          style: regularFontSize,
+        ),
+        onPressed: function,
       ),
     );
   }
@@ -111,27 +90,50 @@ class _ShareLocationState extends State<ShareLocation> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        !hasAccessToLoc ? getButton() : Container(),
+        !hasAccessToLoc
+            ? getButton(
+                message: locationDataMap['passkey'] == ''
+                    ? 'Choose Passkey'
+                    : 'Start sharing - ${locationDataMap['passkey']}',
+                function: locationDataMap['passkey'] == ''
+                    ? () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text("Hold On.."),
+                                content: Text('Choose a passkey first.'),
+                              );
+                            });
+                      }
+                    : () {
+                        getLocation().then((_locationData) {
+                          setState(() {
+                            hasAccessToLoc = true;
+                            locationDataMap['lng'] = _locationData.longitude;
+                            locationDataMap['lat'] = _locationData.latitude;
+                            widget.channel.sink
+                                .add(json.encode(locationDataMap));
+                          });
+                        });
+                      })
+            : Container(),
         hasAccessToLoc
-            ? Center(
-                child: MaterialButton(
-                  shape: StadiumBorder(),
-                  child: Text('Stop sharing location', style: regularFontSize),
-                  color: Theme.of(context).primaryColor,
-                  onPressed: () {
-                    setState(() {
-                      locationDataMap['using'] = false;
-                    });
-                    widget.channel.sink.add(json.encode(locationDataMap));
-                    Timer(Duration(milliseconds: 500), () {
-                      Navigator.of(context).pushReplacement(
-                        CupertinoPageRoute(
-                          builder: (context) => HomePage(),
-                        ),
-                      );
-                    });
-                  },
-                ),
+            ? getButton(
+            message: 'Stop Sharing Location',
+            function: () {
+              setState(() {
+                locationDataMap['using'] = false;
+              });
+              widget.channel.sink.add(json.encode(locationDataMap));
+              Timer(Duration(milliseconds: 500), () {
+                Navigator.of(context).pushReplacement(
+                  CupertinoPageRoute(
+                    builder: (context) => HomePage(),
+                  ),
+                );
+              });
+            },
               )
             : Container(),
         !hasAccessToLoc
@@ -142,7 +144,7 @@ class _ShareLocationState extends State<ShareLocation> {
                     if (snapshot.hasData) {
                       List<String> passkeys = snapshot.data.split(",");
                       return ListView.builder(
-                        physics: BouncingScrollPhysics(),
+                          physics: BouncingScrollPhysics(),
                           itemCount: passkeys.length,
                           itemBuilder: (context, index) {
                             return Padding(
@@ -172,7 +174,7 @@ class _ShareLocationState extends State<ShareLocation> {
                               ),
                             );
                           });
-                    } else if(snapshot.hasError){
+                    } else if (snapshot.hasError) {
                       return Center(
                         child: Text('Error : ${snapshot.error}'),
                       );
@@ -198,7 +200,7 @@ class _ShareLocationState extends State<ShareLocation> {
                             left: 15.0, right: 15.0, top: 50.0),
                         child: Text(
                             snapshot.hasData
-                                ? 'Current Loc : ${data.latitude} ${data.longitude}'
+                                ? 'Current Loc : ${data.latitude}° ${data.longitude}°'
                                 : '',
                             style: largeFontSize),
                       ),
@@ -215,7 +217,7 @@ class _ShareLocationState extends State<ShareLocation> {
 
   @override
   void dispose() {
-    locationDataMap['using']=false;
+    locationDataMap['using'] = false;
     widget.channel.sink.add(json.encode(locationDataMap));
     widget.channel.sink.close();
     super.dispose();
