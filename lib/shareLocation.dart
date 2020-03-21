@@ -135,8 +135,7 @@ class _ShareLocationState extends State<ShareLocation> {
               )
             : Container(),
         !hasAccessToLoc
-            ? SizedBox(
-                height: (MediaQuery.of(context).size.height / 4),
+            ? Expanded(
                 child: StreamBuilder(
                   stream: widget.channel.stream,
                   builder: (context, snapshot) {
@@ -173,6 +172,10 @@ class _ShareLocationState extends State<ShareLocation> {
                               ),
                             );
                           });
+                    } else if(snapshot.hasError){
+                      return Center(
+                        child: Text('Error : ${snapshot.error}'),
+                      );
                     } else {
                       return Container();
                     }
