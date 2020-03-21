@@ -69,7 +69,8 @@ class _ShareLocationState extends State<ShareLocation> {
   getButton() {
     return Center(
       child: MaterialButton(
-        color: Colors.lightBlue[100],
+        shape: StadiumBorder(),
+        color: Theme.of(context).primaryColor,
         splashColor: Colors.white,
         child: locationDataMap['passkey'] == ''
             ? Text(
@@ -114,8 +115,9 @@ class _ShareLocationState extends State<ShareLocation> {
         hasAccessToLoc
             ? Center(
                 child: MaterialButton(
+                  shape: StadiumBorder(),
                   child: Text('Stop sharing location', style: regularFontSize),
-                  color: Colors.lightBlue[100],
+                  color: Theme.of(context).primaryColor,
                   onPressed: () {
                     setState(() {
                       locationDataMap['using'] = false;
@@ -141,6 +143,7 @@ class _ShareLocationState extends State<ShareLocation> {
                     if (snapshot.hasData) {
                       List<String> passkeys = snapshot.data.split(",");
                       return ListView.builder(
+                        physics: BouncingScrollPhysics(),
                           itemCount: passkeys.length,
                           itemBuilder: (context, index) {
                             return Padding(
@@ -209,6 +212,8 @@ class _ShareLocationState extends State<ShareLocation> {
 
   @override
   void dispose() {
+    locationDataMap['using']=false;
+    widget.channel.sink.add(json.encode(locationDataMap));
     widget.channel.sink.close();
     super.dispose();
   }
