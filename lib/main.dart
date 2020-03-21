@@ -31,13 +31,20 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Beacon'),
-      ),
       body: Column(
         children: <Widget>[
+          Container(
+            padding: EdgeInsets.only(top:50.0, left: 30.0),
+            height: 100.0,
+            width: double.infinity,
+            child: Text('Geo Beacon',style: TextStyle(
+              fontSize:21.0,
+            ),),
+            color: Color(0xFFB8E5F1),
+          ),
+          SizedBox(height: 50.0,),
           SizedBox(
-            height: MediaQuery.of(context).size.height / 3,
+            height: MediaQuery.of(context).size.height / 2.5,
             child: ShareLocation(
               channel: IOWebSocketChannel.connect(
                 '$websocketServerUrl:$locationSendPort',
