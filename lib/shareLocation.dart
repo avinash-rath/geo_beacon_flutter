@@ -18,11 +18,17 @@ class ShareLocation extends StatefulWidget {
 
 class _ShareLocationState extends State<ShareLocation> {
   // Using onLocationChanged() method of `location` package
-  // to get a stream of LocationData when the location changes. 
+  // to get a stream of LocationData when the location changes.
   Stream<LocationData> locationStream;
 
   // Boolean to display widgets in UI.
   bool hasAccessToLoc;
+
+  Timer timer;
+  int clock;
+  int hours;
+  int minutes;
+  int seconds;
 
   // Created a map object to store data and send the
   // same to the server. The server uses the same
@@ -34,10 +40,14 @@ class _ShareLocationState extends State<ShareLocation> {
     'lng': 0.0,
   };
 
+  int dropdownValue = 60;
+
   @override
   void initState() {
     super.initState();
     hasAccessToLoc = false;
+    hours = minutes = seconds = 0;
+    clock = dropdownValue;
   }
 
   getLocation() async {
@@ -68,6 +78,25 @@ class _ShareLocationState extends State<ShareLocation> {
     return _locationData;
   }
 
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    timer = new Timer.periodic(
+      oneSec,
+      (Timer timer) => setState(
+        () {
+          if (clock < 1) {
+            timer.cancel();
+            stopSharing();
+          } else {
+            clock = clock - 1;
+            hours = clock ~/ 3600;
+            minutes = (clock - hours * 3600) ~/ 60;
+            seconds = (clock - minutes * 60 - hours*3600);
+          }
+        },
+      ),
+    );
+  }
 
   // Method for MaterialButton
   Widget getButton({
@@ -89,6 +118,20 @@ class _ShareLocationState extends State<ShareLocation> {
     );
   }
 
+  void stopSharing() {
+    setState(() {
+      locationDataMap['using'] = false;
+    });
+    widget.channel.sink.add(json.encode(locationDataMap));
+    Timer(Duration(milliseconds: 500), () {
+      Navigator.of(context).pushReplacement(
+        CupertinoPageRoute(
+          builder: (context) => HomePage(),
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -99,10 +142,10 @@ class _ShareLocationState extends State<ShareLocation> {
         !hasAccessToLoc
             ? getButton(
                 message: locationDataMap['passkey'] == ''
-                // if passkey is not chosen, choose one.
+                    // if passkey is not chosen, choose one.
                     ? 'Choose Passkey'
-                // Once Passkey is chosen, the app is ready to stream
-                // the location.
+                    // Once Passkey is chosen, the app is ready to stream
+                    // the location.
                     : 'Start sharing - ${locationDataMap['passkey']}',
                 function: locationDataMap['passkey'] == ''
                     ? () {
@@ -116,10 +159,11 @@ class _ShareLocationState extends State<ShareLocation> {
                             });
                       }
                     : () {
-                      // Location streaming has started and we are listening
-                      // to the first tick of location stream that we get from
-                      // getLocation() method. Once received the same is sent
-                      // via websocket to the server.
+                        // Location streaming has started and we are listening
+                        // to the first tick of location stream that we get from
+                        // getLocation() method. Once received the same is sent
+                        // via websocket to the server.
+                        startTimer();
                         getLocation().then((_locationData) {
                           setState(() {
                             hasAccessToLoc = true;
@@ -130,27 +174,55 @@ class _ShareLocationState extends State<ShareLocation> {
                           });
                         });
                       })
-            : Container(),
-        // Once location has started streaming, an option to
-        // stop streaming is made available.
-        hasAccessToLoc
-            ? getButton(
-            message: 'Stop Sharing Location',
-            function: () {
-              setState(() {
-                locationDataMap['using'] = false;
-              });
-              widget.channel.sink.add(json.encode(locationDataMap));
-              Timer(Duration(milliseconds: 500), () {
-                Navigator.of(context).pushReplacement(
-                  CupertinoPageRoute(
-                    builder: (context) => HomePage(),
-                  ),
-                );
-              });
-            },
+
+            // Once location has started streaming, an option to
+            // stop streaming is made available.
+            : getButton(
+                message: 'Stop Sharing Location',
+                function: stopSharing,
+              ),
+        !hasAccessToLoc
+            ? Center(
+                child: DropdownButton(
+                    value: dropdownValue,
+                    icon: Icon(Icons.timer),
+                    items: [
+                      DropdownMenuItem(
+                        child: Text('1 Min'),
+                        value: 60,
+                      ),
+                      DropdownMenuItem(
+                        child: Text('5 Min'),
+                        value: 300,
+                      ),
+                      DropdownMenuItem(
+                        child: Text('10 Min'),
+                        value: 600,
+                      ),
+                      DropdownMenuItem(
+                        child: Text('30 Min'),
+                        value: 1800,
+                      ),
+                      DropdownMenuItem(
+                        child: Text('1 Hr.'),
+                        value: 3600,
+                      ),
+                      DropdownMenuItem(
+                        child: Text('3 Hrs.'),
+                        value: 3600 * 3,
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        dropdownValue = value;
+                        clock = dropdownValue;
+                      });
+                    }),
               )
-            : Container(),
+            : Padding(
+              padding: EdgeInsets.all(10.0),
+              child: Center(child: Text('${hours}h : ${minutes}m : ${seconds}s remaining'),),
+            ),
         // Before beginning the stream, check for all the available
         // passkeys and choose one to start sharing location.
         !hasAccessToLoc
@@ -201,12 +273,11 @@ class _ShareLocationState extends State<ShareLocation> {
                   },
                 ),
               )
-            : Container(),
-        // After the initial tick from getLocation() listen to
-        // the locationStream and keep sending the same to server
-        // Also keeping track of the current location in the UI.
-        hasAccessToLoc
-            ? StreamBuilder(
+            // After the initial tick from getLocation() listen to
+            // the locationStream and keep sending the same to server
+            // Also keeping track of the current location in the UI.
+
+            : StreamBuilder(
                 stream: locationStream,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
@@ -229,8 +300,7 @@ class _ShareLocationState extends State<ShareLocation> {
                     return Text('');
                   }
                 },
-              )
-            : Container(),
+              ),
       ],
     );
   }
